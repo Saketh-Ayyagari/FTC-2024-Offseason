@@ -17,6 +17,7 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AngularVelocity;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
+import org.opencv.core.Point;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
@@ -101,9 +102,10 @@ public class ContourDetection extends OpMode{
    @Override
    public void loop(){
       // continously runs the pipeline to receive new images
-      ContourDetectionPipeline pipeline = new ContourDetectionPipeline();
-      camera.setPipeline(pipeline);
-      telemetry.addData("Contour Center located at: ", pipeline.get_contour_center());
+      camera.stopStreaming();
+//      ContourDetectionPipeline pipeline = new ContourDetectionPipeline();
+//      camera.setPipeline(pipeline);
+
       // Show the elapsed game time and wheel power.
       telemetry.addData("Status", "Camera running for: " + runtime.toString());
       telemetry.update();
