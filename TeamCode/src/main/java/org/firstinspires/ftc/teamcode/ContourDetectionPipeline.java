@@ -27,15 +27,50 @@ public class ContourDetectionPipeline extends OpenCvPipeline {
    private Mat hsv = new Mat();
    private Mat mask = new Mat();
    private Mat hierarchy = new Mat(); // NOT necessary for most tasks
-   private MatOfPoint max_contour;
-   Point contour_center = new Point();
 
    @Override
    public Mat processFrame(Mat input) {
       // finds contours
-      ArrayList<MatOfPoint> contour_list = find_contours(input, low_hsv, high_hsv);
+      ArrayList<MatOfPoint> contour_list = find_contours(input, low_hsv, high_hsv, 30);
       input.copyTo(output);
-      // finding max contour
+
+      // if there are contours present
+      if (!contour_list.isEmpty()) {
+         // finding max contour
+         MatOfPoint max_contour = get_largest_contour(contour_list);
+         // gets center
+         Point contour_center = get_contour_center(max_contour);
+
+         // draws contours
+         ArrayList<MatOfPoint> contour = new ArrayList<>();
+         contour.add(max_contour);
+         Imgproc.drawContours(output, contour, -1, CONTOUR_COLOR, 12);
+         Imgproc.circle(output, contour_center, 16, new Scalar(0, 255, 0), -1);
+      }
+
+      return output;
+   }
+
+   // gets a list of contours
+   public ArrayList<MatOfPoint> find_contours(Mat image, Scalar low, Scalar high, double min_contour_area) {
+
+      ArrayList<MatOfPoint> contours = new ArrayList<>();
+
+      Imgproc.cvtColor(image, hsv, Imgproc.COLOR_RGB2HSV); // converts RGB image to HSV
+      Core.inRange(hsv, low, high, mask); // creating mask
+      Imgproc.findContours(mask, contours, hierarchy,
+              Imgproc.RETR_LIST, Imgproc.CHAIN_APPROX_SIMPLE);
+      // only including contours with an area greater than specified (gets rid of unnecessary tiny "specks")
+      for (int i=0; i<contours.size(); i++){
+         double area = Imgproc.contourArea(contours.get(i));
+         if (area < min_contour_area){
+            contours.remove(contours.get(i));
+            i--;
+         }
+      }
+      return contours;
+   }
+   public MatOfPoint get_largest_contour(ArrayList<MatOfPoint> contour_list){
       MatOfPoint max_contour = contour_list.get(0);
       double max_contour_area = -1;
       for (MatOfPoint contour : contour_list) {
@@ -44,41 +79,17 @@ public class ContourDetectionPipeline extends OpenCvPipeline {
             max_contour_area = Imgproc.contourArea(contour);
          }
       }
-      // gets center
-      Point contour_center = get_contour_center();
-
-      // draws contours
-      ArrayList<MatOfPoint> contour = new ArrayList<>();
-      contour.add(max_contour);
-      Imgproc.drawContours(output, contour, -1, CONTOUR_COLOR, 12);
-      Imgproc.circle(output, contour_center, 16, new Scalar(0, 255, 0), -1);
-
-      return output;
+      return max_contour;
    }
-
-   // gets a list of contours
-   public ArrayList<MatOfPoint> find_contours(Mat image, Scalar low, Scalar high) {
-
-      ArrayList<MatOfPoint> contours = new ArrayList<>();
-
-      Imgproc.cvtColor(image, hsv, Imgproc.COLOR_RGB2HSV); // converts RGB image to HSV
-      Core.inRange(hsv, low, high, mask); // creating mask
-      Imgproc.findContours(mask, contours, hierarchy,
-              Imgproc.RETR_LIST, Imgproc.CHAIN_APPROX_SIMPLE);
-
-      return contours;
-   }
-
-   public Point get_contour_center() {
+   public Point get_contour_center(MatOfPoint contour) {
       // Compute moments
-      Moments moments = Imgproc.moments(max_contour);
+      Moments moments = Imgproc.moments(contour);
 
       // Center X Calculation
       int cx = (int) (moments.get_m10() / moments.get_m00());
       int cy = (int) (moments.get_m01() / moments.get_m00());
-
-      this.contour_center = new Point(cx, cy);
-      return contour_center;
+      Point center = new Point(cx, cy);
+      return center;
    }
 
 }
