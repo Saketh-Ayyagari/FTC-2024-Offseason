@@ -27,6 +27,9 @@ public class ContourDetectionPipeline extends OpenCvPipeline {
    private Mat hsv = new Mat();
    private Mat mask = new Mat();
    private Mat hierarchy = new Mat(); // NOT necessary for most tasks
+   // important variables for contours--added to telemetry
+   public Point contour_center = new Point();
+   public double contour_area = 0;
 
    @Override
    public Mat processFrame(Mat input) {
@@ -34,12 +37,12 @@ public class ContourDetectionPipeline extends OpenCvPipeline {
       ArrayList<MatOfPoint> contour_list = find_contours(input, low_hsv, high_hsv, 30);
       input.copyTo(output);
 
-      // if there are contours present
-      if (!contour_list.isEmpty()) {
-         // finding max contour
-         MatOfPoint max_contour = get_largest_contour(contour_list);
-         // gets center
-         Point contour_center = get_contour_center(max_contour);
+      // finding max contour
+      MatOfPoint max_contour = get_largest_contour(contour_list);
+      if (max_contour != null){
+      // gets center and area for telemetry variables
+         this.contour_center = get_contour_center(max_contour);
+         this.contour_area = Imgproc.contourArea(max_contour);
 
          // draws contours
          ArrayList<MatOfPoint> contour = new ArrayList<>();
@@ -70,8 +73,9 @@ public class ContourDetectionPipeline extends OpenCvPipeline {
       }
       return contours;
    }
+   // finds the largest contour in a list
    public MatOfPoint get_largest_contour(ArrayList<MatOfPoint> contour_list){
-      MatOfPoint max_contour = contour_list.get(0);
+      MatOfPoint max_contour = null;
       double max_contour_area = -1;
       for (MatOfPoint contour : contour_list) {
          if (Imgproc.contourArea(contour) > max_contour_area) {
@@ -84,12 +88,9 @@ public class ContourDetectionPipeline extends OpenCvPipeline {
    public Point get_contour_center(MatOfPoint contour) {
       // Compute moments
       Moments moments = Imgproc.moments(contour);
-
-      // Center X Calculation
+      // Center of Mass Calculations
       int cx = (int) (moments.get_m10() / moments.get_m00());
       int cy = (int) (moments.get_m01() / moments.get_m00());
-      Point center = new Point(cx, cy);
-      return center;
+      return new Point(cx, cy);
    }
-
 }

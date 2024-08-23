@@ -84,7 +84,7 @@ public class PIDAngle extends OpMode {
 
         double heading = orientation.getYaw(AngleUnit.DEGREES);
         final double SETPOINT = 90.0;
-        rc_control(6);
+        rc_control(0.6);
 //        double rotation_speed = PIDControl(SETPOINT, heading);
 //
 //        rotate(rotation_speed);

@@ -67,15 +67,19 @@ public class ContourDetection extends OpMode{
       webcamName = hardwareMap.get(WebcamName.class, "webcam13115");
       camera = OpenCvCameraFactory.getInstance().createWebcam(webcamName, cameraMonitorViewId);
 
+      // initializing and setting pipeline for use in the loop() method
+      ContourDetectionPipeline pipeline = new ContourDetectionPipeline();
+      camera.setPipeline(pipeline);
+
       camera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener(){
          @Override
-         public void onOpened(){
+         public void onOpened(){ // what will happen when "Camera Stream" is clicked
             // Usually this is where you'll want to start streaming from the camera (see section 4)
             camera.startStreaming(CAMERA_WIDTH, CAMERA_HEIGHT, OpenCvCameraRotation.UPRIGHT);
-            // starting pipeline
-            ContourDetectionPipeline pipeline = new ContourDetectionPipeline();
-            camera.setPipeline(pipeline);
+
             telemetry.addLine("Camera successfully initialized");
+            telemetry.addData("Contour Center: ", pipeline.contour_center.toString());
+            telemetry.addData("Contour Area: ", pipeline.contour_area);
             telemetry.update();
          }
          @Override
@@ -101,12 +105,9 @@ public class ContourDetection extends OpMode{
    }
    @Override
    public void loop(){
-      // continously runs the pipeline to receive new images
-      camera.stopStreaming();
-//      ContourDetectionPipeline pipeline = new ContourDetectionPipeline();
-//      camera.setPipeline(pipeline);
-
       // Show the elapsed game time and wheel power.
+      telemetry.addData("Contour Center: ", pipeline.contour_center.toString());
+      telemetry.addData("Contour Area: ", pipeline.contour_area);
       telemetry.addData("Status", "Camera running for: " + runtime.toString());
       telemetry.update();
    }
