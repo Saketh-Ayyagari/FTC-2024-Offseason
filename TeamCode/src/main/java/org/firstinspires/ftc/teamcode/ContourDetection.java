@@ -12,7 +12,9 @@ import com.qualcomm.robotcore.hardware.PIDCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
+import com.acmerobotics.dashboard.FtcDashboard;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AngularVelocity;
@@ -22,6 +24,7 @@ import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvWebcam;
+import com.acmerobotics.dashboard.FtcDashboard;
 
 
 @Autonomous(name="Contour Detection", group="Iterative OpMode")
@@ -36,13 +39,18 @@ public class ContourDetection extends OpMode{
    private DcMotor backRight;
 
    // camera variables
-   private static final int CAMERA_WIDTH = 1920;
-   private static final int CAMERA_HEIGHT = 1080;
+   private static final int CAMERA_WIDTH = 640;
+   private static final int CAMERA_HEIGHT = 480;
 
    private int cameraMonitorViewId;
    private OpenCvCamera camera;
    private WebcamName webcamName;
    private ContourDetectionPipeline pipeline;
+   private static double contour_area = 0;
+   private static Point contour_center = new Point();
+
+   FtcDashboard dashboard = FtcDashboard.getInstance();
+   Telemetry telemetry = dashboard.getTelemetry(); // ONLY WORKS ON STATIC VARIABLES
 
    @Override
    public void init() {
@@ -76,10 +84,13 @@ public class ContourDetection extends OpMode{
          public void onOpened(){ // what will happen when "Camera Stream" is clicked
             // Usually this is where you'll want to start streaming from the camera (see section 4)
             camera.startStreaming(CAMERA_WIDTH, CAMERA_HEIGHT, OpenCvCameraRotation.UPRIGHT);
-
+            // Streams camera to FTC Dashboard
+            FtcDashboard.getInstance().startCameraStream(camera, 0);
+            contour_center = pipeline.contour_center;
+            contour_area = pipeline.contour_area;
             telemetry.addLine("Camera successfully initialized");
-            telemetry.addData("Contour Center: ", pipeline.contour_center.toString());
-            telemetry.addData("Contour Area: ", pipeline.contour_area);
+            telemetry.addData("Contour Center: ", contour_center.toString());
+            telemetry.addData("Contour Area: ", contour_area);
             telemetry.update();
          }
          @Override
@@ -88,6 +99,7 @@ public class ContourDetection extends OpMode{
             telemetry.update();
          }
       });
+
 
       // Wait for the game to start (driver presses PLAY)
       telemetry.addData("Status", "Initialized");
@@ -105,9 +117,6 @@ public class ContourDetection extends OpMode{
    }
    @Override
    public void loop(){
-      // Show the elapsed game time and wheel power.
-      telemetry.addData("Contour Center: ", pipeline.contour_center.toString());
-      telemetry.addData("Contour Area: ", pipeline.contour_area);
       telemetry.addData("Status", "Camera running for: " + runtime.toString());
       telemetry.update();
    }

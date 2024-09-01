@@ -27,9 +27,10 @@ public class ContourDetectionPipeline extends OpenCvPipeline {
    private Mat hsv = new Mat();
    private Mat mask = new Mat();
    private Mat hierarchy = new Mat(); // NOT necessary for most tasks
+
    // important variables for contours--added to telemetry
-   public Point contour_center = new Point();
-   public double contour_area = 0;
+   public static Point contour_center = new Point();
+   public static double contour_area = 0;
 
    @Override
    public Mat processFrame(Mat input) {
@@ -47,8 +48,13 @@ public class ContourDetectionPipeline extends OpenCvPipeline {
          // draws contours
          ArrayList<MatOfPoint> contour = new ArrayList<>();
          contour.add(max_contour);
-         Imgproc.drawContours(output, contour, -1, CONTOUR_COLOR, 12);
-         Imgproc.circle(output, contour_center, 16, new Scalar(0, 255, 0), -1);
+         Imgproc.drawContours(output, contour, -1, CONTOUR_COLOR, 8);
+         // Draw a dot at the centroid
+         String label = "(" + (int) contour_center.x + ", " + (int) contour_center.y + ")";
+         Imgproc.putText(input, label, new Point(contour_center.x - 10, contour_center.y),
+                 Imgproc.FONT_HERSHEY_COMPLEX, 0.5, new Scalar(0, 0, 255), 6);
+
+         Imgproc.circle(output, contour_center, 8, new Scalar(0, 255, 0), -1);
       }
 
       return output;
