@@ -115,9 +115,9 @@ public class PIDAngle extends OpMode {
         double D_error = 0;
         if (prevError != null){
             D_error = Kd * (error - prevError)/runtime.seconds();
-            resetRuntime();
             prevError = error;
         }
+        resetRuntime();
         error_sum += error;
         double I_error = Ki*error_sum;
         return Range.clip(P_error + I_error + D_error, -0.6, 0.6);
