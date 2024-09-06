@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
@@ -14,7 +13,6 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AngularVelocity;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
@@ -31,16 +29,12 @@ public class PIDAngle extends OpMode {
     private IMU.Parameters myIMUParameters;
     private IMU imu;
     // PID Values
-    private static double Kp = 0.03125;
-    private static double Ki = 0;
-    private static double Kd = 0;
+    private double Kp = 0.03125;
+    private double Ki = 0;
+    private double Kd = 0;
     private Double prevError = null;
     private double error_sum = 0;
 
-    private static final double MAX_DRIVE_POWER = 0.4;
-
-    FtcDashboard dashboard = FtcDashboard.getInstance();
-    Telemetry telemetry = dashboard.getTelemetry();
     @Override
     public void init(){
         // defining IMU parameters
@@ -90,7 +84,7 @@ public class PIDAngle extends OpMode {
 
         double heading = orientation.getYaw(AngleUnit.DEGREES);
         final double SETPOINT = 90.0;
-        rc_control();
+        rc_control(0.6);
 //        double rotation_speed = PIDControl(SETPOINT, heading);
 //
 //        rotate(rotation_speed);
@@ -126,9 +120,9 @@ public class PIDAngle extends OpMode {
         resetRuntime();
         error_sum += error;
         double I_error = Ki*error_sum;
-        return Range.clip(P_error + I_error + D_error, -MAX_DRIVE_POWER, MAX_DRIVE_POWER);
+        return Range.clip(P_error + I_error + D_error, -0.6, 0.6);
     }
-    public void rc_control(){
+    public void rc_control(double maxDrivePower){
         // Setup a variable for each drive wheel to save power level for telemetry
         double leftPower;
         double rightPower;
@@ -141,8 +135,8 @@ public class PIDAngle extends OpMode {
         telemetry.addData("Turning Value: ", turn);
         telemetry.addLine();
 
-        leftPower = Range.clip(drive - turn, -MAX_DRIVE_POWER, MAX_DRIVE_POWER);
-        rightPower = Range.clip(drive + turn, -MAX_DRIVE_POWER, MAX_DRIVE_POWER);
+        leftPower = Range.clip(drive - turn, -maxDrivePower, maxDrivePower);
+        rightPower = Range.clip(drive + turn, -maxDrivePower, maxDrivePower);
 
         // Send calculated power to wheels
         frontLeft.setPower(leftPower);
