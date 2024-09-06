@@ -35,6 +35,8 @@ public class PIDAngle extends OpMode {
     private Double prevError = null;
     private double error_sum = 0;
 
+    private static final double MAX_POWER = 0.4;
+
     @Override
     public void init(){
         // defining IMU parameters
@@ -84,7 +86,7 @@ public class PIDAngle extends OpMode {
 
         double heading = orientation.getYaw(AngleUnit.DEGREES);
         final double SETPOINT = 90.0;
-        rc_control(0.6);
+        rc_control();
 //        double rotation_speed = PIDControl(SETPOINT, heading);
 //
 //        rotate(rotation_speed);
@@ -120,29 +122,38 @@ public class PIDAngle extends OpMode {
         resetRuntime();
         error_sum += error;
         double I_error = Ki*error_sum;
-        return Range.clip(P_error + I_error + D_error, -0.6, 0.6);
+        return Range.clip(P_error + I_error + D_error, -MAX_POWER, MAX_POWER);
     }
-    public void rc_control(double maxDrivePower){
+    public void rc_control(){
         // Setup a variable for each drive wheel to save power level for telemetry
         double leftPower;
         double rightPower;
 
         //Flipped x and y because motors are flipped - 12/16
         double drive = gamepad1.left_stick_y; //controls drive by moving up or down.
-        double turn = gamepad1.left_stick_x;
+        double turn = gamepad1.right_stick_x;
+        double strafe = gamepad1.left_stick_x;
 
         telemetry.addData("Drive Power: ", drive);
         telemetry.addData("Turning Value: ", turn);
+        telemetry.addData("Strafing Value: ", strafe);
         telemetry.addLine();
 
-        leftPower = Range.clip(drive - turn, -maxDrivePower, maxDrivePower);
-        rightPower = Range.clip(drive + turn, -maxDrivePower, maxDrivePower);
+        leftPower = Range.clip(drive - turn, -MAX_POWER, MAX_POWER);
+        rightPower = Range.clip(drive + turn, -MAX_POWER, MAX_POWER);
 
         // Send calculated power to wheels
-        frontLeft.setPower(leftPower);
-        frontRight.setPower(rightPower);
-        backLeft.setPower(leftPower);
-        backRight.setPower(rightPower);
+        frontLeft.setPower(Range.clip(leftPower-strafe, -MAX_POWER, MAX_POWER));
+        frontRight.setPower(Range.clip(rightPower+strafe, -MAX_POWER, MAX_POWER));
+        backLeft.setPower(Range.clip(leftPower+strafe, -MAX_POWER, MAX_POWER));
+        backRight.setPower(Range.clip(rightPower-strafe, -MAX_POWER, MAX_POWER));
+
+        // RC movement WITHOUT combined strafing
+//        frontLeft.setPower(leftPower);
+//        backLeft.setPower(leftPower);
+//        frontRight.setPower(rightPower);
+//        backRight.setPower(rightPower);
+//
 
     }
     public void forward(double power){
@@ -166,6 +177,16 @@ public class PIDAngle extends OpMode {
         frontLeft.setPower(power);
         backLeft.setPower(power);
         frontRight.setPower(-power);
+        backRight.setPower(-power);
+    }
+    /*
+    * Negative Power = strafe left
+    * Positive power = strafe right
+    * */
+    public void strafe(double power){
+        frontLeft.setPower(-power);
+        backLeft.setPower(power);
+        frontRight.setPower(power);
         backRight.setPower(-power);
     }
     public void brake(){
