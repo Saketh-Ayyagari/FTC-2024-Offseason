@@ -14,21 +14,35 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AngularVelocity;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
+import org.openftc.easyopencv.OpenCvCamera;
+import org.openftc.easyopencv.OpenCvCameraFactory;
+import org.openftc.easyopencv.OpenCvCameraRotation;
 
 
 public class Robot{
+    private HardwareMap hardwareMap;
+
     // Declare OpMode members for each of the 4 motors.
     private DcMotor frontLeft;
     private DcMotor backLeft;
     private DcMotor frontRight;
     private DcMotor backRight;
-    private IMU.Parameters myIMUParameters;
-    private IMU imu;
-    private HardwareMap hardwareMap;
+    // IMU and IMU Parameters
+    private IMU.Parameters myIMUParameters; private IMU imu;
+    // variables for camera use
+    private int cameraMonitorViewId;
+    private OpenCvCamera camera;
+    private WebcamName webcamName;
+    // camera resolution variables
+    private static final int CAMERA_WIDTH = 640;
+    private static final int CAMERA_HEIGHT = 480;
 
+    private Telemetry telemetry;
     public Robot(HardwareMap hardware){
         this.hardwareMap = hardware;
     }
@@ -50,14 +64,40 @@ public class Robot{
         backLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         backRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-        //start
+        //start at 0 power
         backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
     }
+    // initializes camera to use EasyOpenCV
+    public void initOpenCV(){
+        // initializing camera
+        cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id",
+                hardwareMap.appContext.getPackageName());
+        webcamName = hardwareMap.get(WebcamName.class, "webcam13115");
+        camera = OpenCvCameraFactory.getInstance().createWebcam(webcamName, cameraMonitorViewId);
 
+        // initializing and setting pipeline for use in the loop() method
+        ContourDetectionPipeline pipeline = new ContourDetectionPipeline();
+        camera.setPipeline(pipeline);
+
+        camera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener(){
+            @Override
+            public void onOpened(){ // what will happen when "Camera Stream" is clicked
+                // Usually this is where you'll want to start streaming from the camera (see section 4)
+                camera.startStreaming(CAMERA_WIDTH, CAMERA_HEIGHT, OpenCvCameraRotation.UPRIGHT);
+                // Streams camera to FTC Dashboard
+                telemetry.addLine("Camera successfully initialized");
+                telemetry.update();
+            }
+            @Override
+            public void onError(int errorCode){
+                telemetry.addLine("Camera failed.");
+                telemetry.update();
+            }
+        });
+    }
     public void forward(double power){
         frontLeft.setPower(-power);
         backLeft.setPower(-power);
