@@ -19,26 +19,23 @@ import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 
 @TeleOp(name="PIDAngleControl", group="Linear Opmode")
 //@Disabled
-public class PIDAngle extends OpMode {
+public class PIDAngle extends LinearOpMode{
     // Declare OpMode members for each of the 4 motors.
     private ElapsedTime runtime = new ElapsedTime();
-    private DcMotor frontLeft;
-    private DcMotor backLeft;
-    private DcMotor frontRight;
-    private DcMotor backRight;
+    private Robot drivetrain = new Robot(hardwareMap);
     private IMU.Parameters myIMUParameters;
     private IMU imu;
     // PID Values
-    private double Kp = 0.03125;
-    private double Ki = 0;
-    private double Kd = 0;
+    private final double Kp = 0.03125;
+    private final double Ki = 0;
+    private final double Kd = 0;
     private Double prevError = null;
     private double error_sum = 0;
 
     private static final double MAX_POWER = 0.4;
 
     @Override
-    public void init(){
+    public void runOpMode(){
         // defining IMU parameters
         myIMUParameters = new IMU.Parameters(
                 new RevHubOrientationOnRobot(
@@ -48,67 +45,43 @@ public class PIDAngle extends OpMode {
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
-        backRight = hardwareMap.dcMotor.get("backRight"); //port 3
-        frontRight = hardwareMap.dcMotor.get("frontRight"); //port 2
-        backLeft = hardwareMap.dcMotor.get("backLeft"); //port 1
-        frontLeft = hardwareMap.dcMotor.get("frontLeft"); //port 0
-        imu = hardwareMap.get(IMU.class, "imu");
-
-        backRight.setDirection(DcMotor.Direction.REVERSE);
-        frontRight.setDirection(DcMotor.Direction.REVERSE);
-
-        // setting the mode of each motor to run without encoders
-        frontLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        frontRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        backLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        backRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
-        //start
-        backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        drivetrain.init();
         // initializing IMU
         imu.initialize(myIMUParameters);
-    }
 
-    @Override
-    public void start(){
+        waitForStart();
         runtime.reset();
-    }
-    @Override
-    public void loop() {
-        // rc_control();
-        // Create an object to receive the IMU angles
-        YawPitchRollAngles orientation = imu.getRobotYawPitchRollAngles();
-        // receiving IMU Angular Velocity Values
-        AngularVelocity angularVelocity = imu.getRobotAngularVelocity(AngleUnit.DEGREES);
+        while (opModeIsActive()){
+            // Create an object to receive the IMU angles
+            YawPitchRollAngles orientation = imu.getRobotYawPitchRollAngles();
+            // receiving IMU Angular Velocity Values
+            AngularVelocity angularVelocity = imu.getRobotAngularVelocity(AngleUnit.DEGREES);
 
-        double heading = orientation.getYaw(AngleUnit.DEGREES);
-        final double SETPOINT = 90.0;
-        rc_control();
-//        double rotation_speed = PIDControl(SETPOINT, heading);
-//
-//        rotate(rotation_speed);
+            double heading = orientation.getYaw(AngleUnit.DEGREES);
+            final double SETPOINT = 90.0;
+
+            double rotation_speed = PIDControl(SETPOINT, heading);
+
+            drivetrain.rotate(rotation_speed);
 
 
-        telemetry.addData("frontLeftPower", frontLeft.getPower());
-        telemetry.addData("frontRightPower", frontRight.getPower());
-        telemetry.addData("backLeftPower", backLeft.getPower());
-        telemetry.addData("backRightPower", backRight.getPower());
-        telemetry.addLine();
-        telemetry.addData("Yaw (Z)", "%.2f Deg. (Heading)", orientation.getYaw(AngleUnit.DEGREES));
-        telemetry.addData("Pitch (X)", "%.2f Deg.", orientation.getPitch(AngleUnit.DEGREES));
-        telemetry.addData("Roll (Y)", "%.2f Deg.\n", orientation.getRoll(AngleUnit.DEGREES));
-        telemetry.addData("Yaw (Z) velocity", "%.2f Deg/Sec", angularVelocity.zRotationRate);
-        telemetry.addData("Pitch (X) velocity", "%.2f Deg/Sec", angularVelocity.xRotationRate);
-        telemetry.addData("Roll (Y) velocity", "%.2f Deg/Sec", angularVelocity.yRotationRate);
-        telemetry.addLine();
-        // Show the elapsed game time and wheel power.
-        telemetry.addData("Status", "Run Time: " + runtime.toString());
+            telemetry.addData("frontLeftPower", drivetrain.frontLeft.getPower());
+            telemetry.addData("frontRightPower", drivetrain.frontRight.getPower());
+            telemetry.addData("backLeftPower", drivetrain.backLeft.getPower());
+            telemetry.addData("backRightPower", drivetrain.backRight.getPower());
+            telemetry.addLine();
+            telemetry.addData("Yaw (Z)", "%.2f Deg. (Heading)", orientation.getYaw(AngleUnit.DEGREES));
+            telemetry.addData("Pitch (X)", "%.2f Deg.", orientation.getPitch(AngleUnit.DEGREES));
+            telemetry.addData("Roll (Y)", "%.2f Deg.\n", orientation.getRoll(AngleUnit.DEGREES));
+            telemetry.addData("Yaw (Z) velocity", "%.2f Deg/Sec", angularVelocity.zRotationRate);
+            telemetry.addData("Pitch (X) velocity", "%.2f Deg/Sec", angularVelocity.xRotationRate);
+            telemetry.addData("Roll (Y) velocity", "%.2f Deg/Sec", angularVelocity.yRotationRate);
+            telemetry.addLine();
+            // Show the elapsed game time and wheel power.
+            telemetry.addData("Status", "Run Time: " + runtime.toString());
 
-        telemetry.update();
-
+            telemetry.update();
+        }
     }
     public double PIDControl(double setpoint, double current){
         double error = setpoint - current;
@@ -124,6 +97,8 @@ public class PIDAngle extends OpMode {
         double I_error = Ki*error_sum;
         return Range.clip(P_error + I_error + D_error, -MAX_POWER, MAX_POWER);
     }
+    // Move this to a controller file
+    /*
     public void rc_control(){
         // Setup a variable for each drive wheel to save power level for telemetry
         double leftPower;
@@ -154,46 +129,8 @@ public class PIDAngle extends OpMode {
 //        frontRight.setPower(rightPower);
 //        backRight.setPower(rightPower);
 //
+    }
+     */
 
-    }
-    public void forward(double power){
-        frontLeft.setPower(-power);
-        backLeft.setPower(-power);
-        frontRight.setPower(-power);
-        backRight.setPower(-power);
-    }
-    public void backward(double power){
-        frontLeft.setPower(power);
-        backLeft.setPower(power);
-        frontRight.setPower(power);
-        backRight.setPower(power);
-    }
-    /*
-    * Positive power = rotate counterclockwise (causes heading to become larger)
-    * Negative power = rotate clockwise (causes heading to become smaller)
-    * Just like unit circle
-    * */
-    public void rotate(double power){
-        frontLeft.setPower(power);
-        backLeft.setPower(power);
-        frontRight.setPower(-power);
-        backRight.setPower(-power);
-    }
-    /*
-    * Negative Power = strafe left
-    * Positive power = strafe right
-    * */
-    public void strafe(double power){
-        frontLeft.setPower(-power);
-        backLeft.setPower(power);
-        frontRight.setPower(power);
-        backRight.setPower(-power);
-    }
-    public void brake(){
-        backRight.setPower(0);
-        backLeft.setPower(0);
-        frontRight.setPower(0);
-        frontLeft.setPower(0);
-    }
 }
 
