@@ -29,17 +29,18 @@ import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 
-
+/**
+ * Saketh Ayyagari
+ * "Robot" class for motor control
+ */
 public class Robot{
-    HardwareMap hardwareMap;
+    private HardwareMap hardwareMp;
     // Declare OpMode members for each of the 4 motors.
     public DcMotor frontLeft;
     public DcMotor backLeft;
     public DcMotor frontRight;
     public DcMotor backRight;
-    // IMU and IMU Parameters
-    private IMU.Parameters myIMUParameters;
-    private IMU imu;
+
     // variables for camera use
     private int cameraMonitorViewId;
     private OpenCvCamera camera;
@@ -52,17 +53,18 @@ public class Robot{
 
     private Telemetry telemetry;
 
-    public Robot(HardwareMap hwMap){
-        this.hardwareMap = hwMap;
-    }
+
     // initializes robot motors, encoders, etc. MUST be run before any movement occurs
+    // the init method must be the one to take in a
+    public Robot(HardwareMap hwMp){
+        this.hardwareMp = hwMp;
+    }
     public void init(){
         // initializes all motors
-        backRight = hardwareMap.get(DcMotor.class, "backRight"); //port 3
-        frontRight = hardwareMap.get(DcMotor.class, "frontRight"); //port 2
-        backLeft = hardwareMap.get(DcMotor.class, "backLeft"); //port 1
-        frontLeft = hardwareMap.get(DcMotor.class, "frontLeft"); //port 0
-        imu = hardwareMap.get(IMU.class, "imu");
+        backRight = hardwareMp.get(DcMotor.class, "backRight"); //port 3
+        frontRight = hardwareMp.get(DcMotor.class, "frontRight"); //port 2
+        backLeft = hardwareMp.get(DcMotor.class, "backLeft"); //port 1
+        frontLeft = hardwareMp.get(DcMotor.class, "frontLeft"); //port 0
 
         backRight.setDirection(DcMotor.Direction.REVERSE);
         frontRight.setDirection(DcMotor.Direction.REVERSE);
@@ -78,34 +80,6 @@ public class Robot{
         backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-    }
-    // initializes camera to use EasyOpenCV
-    public void initOpenCV(){
-        // initializing camera
-        cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id",
-                hardwareMap.appContext.getPackageName());
-        webcamName = hardwareMap.get(WebcamName.class, "webcam13115");
-        camera = OpenCvCameraFactory.getInstance().createWebcam(webcamName, cameraMonitorViewId);
-
-        // initializing and setting pipeline for use in the loop() method
-        ContourDetectionPipeline pipeline = new ContourDetectionPipeline();
-        camera.setPipeline(pipeline);
-
-        camera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener(){
-            @Override
-            public void onOpened(){ // what will happen when "Camera Stream" is clicked
-                // Usually this is where you'll want to start streaming from the camera (see section 4)
-                camera.startStreaming(CAMERA_WIDTH, CAMERA_HEIGHT, OpenCvCameraRotation.UPRIGHT);
-                // Streams camera to FTC Dashboard
-                telemetry.addLine("Camera successfully initialized");
-                telemetry.update();
-            }
-            @Override
-            public void onError(int errorCode){
-                telemetry.addLine("Camera failed.");
-                telemetry.update();
-            }
-        });
     }
     public void forward(double power){
         frontLeft.setPower(-power);
