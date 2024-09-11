@@ -12,17 +12,17 @@ import com.qualcomm.robotcore.hardware.PIDCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
-
+import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AngularVelocity;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 
-@TeleOp(name="PIDAngleControl", group="Linear Opmode")
+@Autonomous(name="PIDAngleControl", group="Linear Opmode")
 //@Disabled
 public class PIDAngle extends LinearOpMode{
     // Declare OpMode members for each of the 4 motors.
     private ElapsedTime runtime = new ElapsedTime();
-    private Robot drivetrain = new Robot(hardwareMap);
+    private Robot drivetrain;
     private IMU.Parameters myIMUParameters;
     private IMU imu;
     // PID Values
@@ -42,14 +42,17 @@ public class PIDAngle extends LinearOpMode{
                         RevHubOrientationOnRobot.LogoFacingDirection.LEFT,
                         RevHubOrientationOnRobot.UsbFacingDirection.FORWARD)
         );
+        drivetrain = new Robot(hardwareMap);
+        drivetrain.init();
+        imu = hardwareMap.get(IMU.class, "imu");
+
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
-        drivetrain.init();
         // initializing IMU
         imu.initialize(myIMUParameters);
 
-        waitForStart();
+        waitForStart(); imu.resetYaw();
         runtime.reset();
         while (opModeIsActive()){
             // Create an object to receive the IMU angles
