@@ -31,16 +31,16 @@ public class PIDAngle extends LinearOpMode{
     private IMU.Parameters myIMUParameters;
     private IMU imu;
     // PID Values
-    private static double Kp = 0.03125;
-    private static double Ki = 0;
-    private static double Kd = 0;
+    public static double Kp = 0.03125;
+    public static double Ki = 0;
+    public static double Kd = 0;
     private Double prevError = null;
     private double error_sum = 0;
 
-    private static double MAX_POWER = 0.4;
+    public static double MAX_POWER = 0.4;
 
     FtcDashboard dashboard = FtcDashboard.getInstance();
-    Telemetry telemetry = dashboard.getTelemetry(); // ONLY WORKS ON STATIC VARIABLES
+    Telemetry telemetry = dashboard.getTelemetry(); // ONLY WORKS ON PUBLIC STATIC VARIABLES
 
     @Override
     public void runOpMode(){
