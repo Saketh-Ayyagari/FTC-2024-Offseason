@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
@@ -13,6 +14,8 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AngularVelocity;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
@@ -26,13 +29,16 @@ public class PIDAngle extends LinearOpMode{
     private IMU.Parameters myIMUParameters;
     private IMU imu;
     // PID Values
-    private final double Kp = 0.03125;
-    private final double Ki = 0;
-    private final double Kd = 0;
+    private static final double Kp = 0.03125;
+    private static final double Ki = 0;
+    private static final double Kd = 0;
     private Double prevError = null;
     private double error_sum = 0;
 
     private static final double MAX_POWER = 0.4;
+
+    FtcDashboard dashboard = FtcDashboard.getInstance();
+    Telemetry telemetry = dashboard.getTelemetry(); // ONLY WORKS ON STATIC VARIABLES
 
     @Override
     public void runOpMode(){
