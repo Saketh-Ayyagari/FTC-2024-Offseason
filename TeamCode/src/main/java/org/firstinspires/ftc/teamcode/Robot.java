@@ -150,17 +150,18 @@ public class Robot{
 //        frontRight.setPower(rightPower);
 //        backRight.setPower(rightPower);
     }
-    // given parameters for speed and angle, send power to the motors
+    // given parameters for speed, angle, and strafe power, send power to the motors
     // inspired by MIT RACECAR system where it sends (speed, angle) to the car
-    public void powerMotors(double speed, double angle){
+    public void powerMotors(double speed, double angle, double strafe){
         double leftPower = Range.clip(speed - angle, -MAX_POWER, MAX_POWER);
         double rightPower = Range.clip(speed + angle, -MAX_POWER, MAX_POWER);
 
         // Send calculated power to wheels
-        frontRight.setPower(rightPower);
-        frontLeft.setPower(leftPower);
-        backLeft.setPower(leftPower);
-        backRight.setPower(rightPower);
+        frontLeft.setPower(Range.clip(leftPower-strafe, -MAX_POWER, MAX_POWER));
+        frontRight.setPower(Range.clip(rightPower+strafe, -MAX_POWER, MAX_POWER));
+        backLeft.setPower(Range.clip(leftPower+strafe, -MAX_POWER, MAX_POWER));
+        backRight.setPower(Range.clip(rightPower-strafe, -MAX_POWER, MAX_POWER));
+
     }
 
 }
