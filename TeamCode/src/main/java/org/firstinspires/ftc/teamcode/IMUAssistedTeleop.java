@@ -70,6 +70,9 @@ public class IMUAssistedTeleop extends OpMode{
         double leftPower;
         double rightPower;
 
+        // Create an object to receive the IMU angles
+        YawPitchRollAngles orientation = imu.getRobotYawPitchRollAngles();
+
         //Flipped x and y because motors are flipped - 12/16
         double drive = gamepad1.left_stick_y; //controls drive by moving up or down.
         double turn = gamepad1.right_stick_x; // controls turning
@@ -91,14 +94,12 @@ public class IMUAssistedTeleop extends OpMode{
         rightPower = Range.clip(drive + turn, -MAX_POWER, MAX_POWER);
 
 
-        // Create an object to receive the IMU angles
-        YawPitchRollAngles orientation = imu.getRobotYawPitchRollAngles();
         // receiving IMU Angular Velocity Values
         AngularVelocity angularVelocity = imu.getRobotAngularVelocity(AngleUnit.DEGREES);
 
         double heading = orientation.getYaw(AngleUnit.DEGREES);
-        final double SETPOINT = 90.0;
 
+        double SETPOINT = 0.0;
         double rotation_speed = PIDControl(SETPOINT, heading);
 
         drivetrain.rotate(rotation_speed);

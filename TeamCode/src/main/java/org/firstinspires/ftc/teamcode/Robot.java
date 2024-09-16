@@ -104,6 +104,10 @@ public class Robot{
         frontRight.setPower(-power);
         backRight.setPower(-power);
     }
+    /*
+     * Negative Power = strafe left
+     * Positive power = strafe right
+     * */
     public void strafe(double power){
         frontLeft.setPower(-power);
         backLeft.setPower(power);
@@ -146,9 +150,18 @@ public class Robot{
 //        frontRight.setPower(rightPower);
 //        backRight.setPower(rightPower);
     }
-    /*
-     * Negative Power = strafe left
-     * Positive power = strafe right
-     * */
+    // given parameters for speed and angle, send power to the motors
+    // inspired by MIT RACECAR system where it sends (speed, angle) to the car
+    public void powerMotors(double speed, double angle){
+        double leftPower = Range.clip(speed - angle, -MAX_POWER, MAX_POWER);
+        double rightPower = Range.clip(speed + angle, -MAX_POWER, MAX_POWER);
+
+        // Send calculated power to wheels
+        frontRight.setPower(rightPower);
+        frontLeft.setPower(leftPower);
+        backLeft.setPower(leftPower);
+        backRight.setPower(rightPower);
+    }
+
 }
 
