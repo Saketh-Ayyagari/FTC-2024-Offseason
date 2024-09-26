@@ -25,9 +25,6 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AngularVelocity;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
-import org.openftc.easyopencv.OpenCvCamera;
-import org.openftc.easyopencv.OpenCvCameraFactory;
-import org.openftc.easyopencv.OpenCvCameraRotation;
 
 /**
  * Saketh Ayyagari
@@ -41,18 +38,10 @@ public class Robot{
     public DcMotor frontRight;
     public DcMotor backRight;
 
-    // variables for camera use
-    private int cameraMonitorViewId;
-    private OpenCvCamera camera;
-    private WebcamName webcamName;
-    // camera resolution variables
-    private final int CAMERA_WIDTH = 640;
-    private final int CAMERA_HEIGHT = 480;
     // maximum power robot can drive
     public final double MAX_POWER = 0.6;
 
     private Telemetry telemetry;
-
 
     // initializes robot motors, encoders, etc. MUST be run before any movement occurs
     // the init method must be the one to take in a
@@ -120,48 +109,17 @@ public class Robot{
         frontRight.setPower(0);
         frontLeft.setPower(0);
     }
-    public void rc_control(){
-        // Setup a variable for each drive wheel to save power level for telemetry
-        double leftPower;
-        double rightPower;
-
-        //Flipped x and y because motors are flipped - 12/16
-        double drive = gamepad1.left_stick_y; //controls drive by moving up or down.
-        double turn = gamepad1.right_stick_x;
-        double strafe = gamepad1.left_stick_x;
-
-        telemetry.addData("Drive Power: ", drive);
-        telemetry.addData("Turning Value: ", turn);
-        telemetry.addData("Strafing Value: ", strafe);
-        telemetry.addLine();
-
-        leftPower = Range.clip(drive - turn, -MAX_POWER, MAX_POWER);
-        rightPower = Range.clip(drive + turn, -MAX_POWER, MAX_POWER);
-
-        // Send calculated power to wheels
-        frontLeft.setPower(Range.clip(leftPower-strafe, -MAX_POWER, MAX_POWER));
-        frontRight.setPower(Range.clip(rightPower+strafe, -MAX_POWER, MAX_POWER));
-        backLeft.setPower(Range.clip(leftPower+strafe, -MAX_POWER, MAX_POWER));
-        backRight.setPower(Range.clip(rightPower-strafe, -MAX_POWER, MAX_POWER));
-
-        // RC movement WITHOUT combined strafing
-//        frontLeft.setPower(leftPower);
-//        backLeft.setPower(leftPower);
-//        frontRight.setPower(rightPower);
-//        backRight.setPower(rightPower);
-    }
     // given parameters for speed, angle, and strafe power, send power to the motors
     // inspired by MIT RACECAR system where it sends (speed, angle) to the car
-    public void powerMotors(double speed, double angle, double strafe){
-        double leftPower = Range.clip(speed - angle, -MAX_POWER, MAX_POWER);
-        double rightPower = Range.clip(speed + angle, -MAX_POWER, MAX_POWER);
+    public void powerMotors(double drive, double turn, double strafe){
+        double leftPower = Range.clip(drive - turn, -MAX_POWER, MAX_POWER);
+        double rightPower = Range.clip(drive + turn, -MAX_POWER, MAX_POWER);
 
         // Send calculated power to wheels
         frontLeft.setPower(Range.clip(leftPower-strafe, -MAX_POWER, MAX_POWER));
         frontRight.setPower(Range.clip(rightPower+strafe, -MAX_POWER, MAX_POWER));
         backLeft.setPower(Range.clip(leftPower+strafe, -MAX_POWER, MAX_POWER));
         backRight.setPower(Range.clip(rightPower-strafe, -MAX_POWER, MAX_POWER));
-
     }
 
 }
